@@ -10,7 +10,7 @@ namespace JJJWebServer
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hejsan kompisar");
+            Console.WriteLine("Hejsan kompisar, JOCKE HÄR");
             //
         }
     }
