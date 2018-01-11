@@ -40,7 +40,7 @@ namespace JJJWebServer
                 //GetContentTypeStuff(context);
                 HttpListenerResponse response = context.Response;
                 // Construct a response.
-                byte[] buffer = File.ReadAllBytes(path + "\\" + request.RawUrl);
+                byte[] buffer = File.ReadAllBytes(path);
                 // Get a response stream and write the response to it.
                 response.ContentLength64 = buffer.Length;
                 System.IO.Stream output = response.OutputStream;
