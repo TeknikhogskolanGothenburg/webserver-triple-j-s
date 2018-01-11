@@ -11,7 +11,8 @@ namespace JJJWebServer
     {
         static void Main(string[] args)
         {
-            
+        string[] prefixes = {"http://localhost:8080/"};
+        TestWebServer ws = new TestWebServer(prefixes);
         }
     }
 }

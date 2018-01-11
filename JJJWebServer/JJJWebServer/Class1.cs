@@ -4,14 +4,14 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
 
 namespace JJJWebServer
 {
     public class TestWebServer
     {
         private HttpListener listener = new HttpListener();
-        private Func<HttpListenerRequest, string> responseMethod;
-        public TestWebServer(string[] prefixes, Func<HttpListenerRequest, string> webHost) 
+        public TestWebServer(string[] prefixes) 
         {
             if (!HttpListener.IsSupported)
                 throw new NotSupportedException(
@@ -28,8 +28,6 @@ namespace JJJWebServer
             {
                 listener.Prefixes.Add(s);
             }
-            //webHost cannot = null
-            responseMethod = webHost ?? throw new ArgumentException("address");
             listener.Start();
 
             Console.WriteLine("Listening...");
@@ -39,15 +37,42 @@ namespace JJJWebServer
             // Obtain a response object.
             HttpListenerResponse response = context.Response;
             // Construct a response.
-            string responseString = "<HTML><BODY> Hello world!</BODY></HTML>";
-            byte[] buffer = System.Text.Encoding.UTF8.GetBytes(responseString);
-            // Get a response stream and write the response to it.
-            response.ContentLength64 = buffer.Length;
-            System.IO.Stream output = response.OutputStream;
-            output.Write(buffer, 0, buffer.Length);
-            // You must close the output stream.
-            output.Close();
+            //string responseString = "<HTML><BODY> Hello world!</BODY></HTML>";
+            //byte[] buffer = Encoding.UTF8.GetBytes(responseString);
+            //// Get a response stream and write the response to it.
+            //response.ContentLength64 = buffer.Length;
+            //Stream output = response.OutputStream;
+            //output.Write(buffer, 0, buffer.Length);
+            //// You must close the output stream.
+            //output.Close();
+
+            while (listener.IsListening)
+            {
+                HttpListenerContext contentType = listener.GetContext();
+                ProcessRequest(context);
+            }
             listener.Stop();
+        }
+
+        public static void ProcessRequest(HttpListenerContext contentType)
+        {
+            string path =@"...\...\...\Content";
+            try
+            {
+                contentType.Response.StatusCode = (int)HttpStatusCode.Accepted;
+                Console.WriteLine(contentType.Response.StatusCode = (int)HttpStatusCode.Accepted);
+                var receivingFile = File.ReadAllBytes(path);
+                Console.WriteLine(receivingFile);
+                contentType.Response.ContentLength64 = receivingFile.Length;
+                Stream output = contentType.Response.OutputStream;
+                output.Write(receivingFile, 0, receivingFile.Length);
+            }
+            catch (Exception e)
+            {
+
+                Console.WriteLine("Processing Problem");
+            }
+
         }
 
     }
