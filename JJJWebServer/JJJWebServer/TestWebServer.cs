@@ -47,17 +47,43 @@ namespace JJJWebServer
             {
                 context.Response.StatusCode = (int)HttpStatusCode.Accepted;
                 Console.WriteLine(context.Response.StatusCode = (int)HttpStatusCode.Accepted);
-
                 byte[] buffer = File.ReadAllBytes(path);
+                ResponseSetType(context, path);
                 context.Response.ContentLength64 = buffer.Length;
                 Stream output = context.Response.OutputStream;
                 output.Write(buffer, 0, buffer.Length);
+                
             }
             catch (Exception e)
             {
                 Console.WriteLine("Processing Problem");
             }
 
+        }
+
+        public static void ResponseSetType(HttpListenerContext context,string path)
+        {
+            if (Path.GetExtension(path) == ".jpg")
+            {
+                context.Response.ContentType = "image/jpeg";
+            }
+            else if (Path.GetExtension(path) == ".gif")
+            {
+                context.Response.ContentType = "image/gif";
+            }
+            else if(Path.GetExtension(path) == ".pdf")
+            {
+                context.Response.ContentType = "application/pdf";
+            }
+            else if (Path.GetExtension(path) == ".js")
+            {
+                context.Response.ContentType = "application/x-javascript";
+            }
+            else if (Path.GetExtension(path) == ".css")
+            {
+                context.Response.ContentType = "text/css";
+            }
+        
         }
 
     }
