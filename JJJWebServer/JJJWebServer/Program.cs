@@ -71,6 +71,10 @@ namespace JJJWebServer
                                 }
                             }
                         }
+                        if(filename == "Subfolder/")
+                        {
+                            filename = "SubFolder/index.html";
+                        }
                         filename = Path.Combine(rootPath, filename);
                         //runs program if file exists
                         if (File.Exists(filename))
@@ -80,9 +84,9 @@ namespace JJJWebServer
                                 Console.WriteLine(filename);
                                 Stream input = new FileStream(filename, FileMode.Open);
                                 //Adding permanent http response headers
-                                //context.Response.ContentType = extensions.TryGetValue(Path.GetExtension(filename), out string mime)
-                                //    ? mime
-                                //    : "text/html";
+                                context.Response.ContentType = extensions.TryGetValue(Path.GetExtension(filename), out string mime)
+                                    ? mime
+                                    : "text/html";
                                 context.Response.ContentLength64 = input.Length;
                                 context.Response.AddHeader("Date", DateTime.Now.ToString("r"));
                                 context.Response.AddHeader("Last-Modified", File.GetLastWriteTime(filename).ToString("r"));
