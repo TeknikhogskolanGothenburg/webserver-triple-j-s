@@ -23,7 +23,7 @@ namespace JJJWebServer
         };
 
         private static string rootPath = ".../.../.../.../Content/";
-        private static string[] DefaultFiles = { "index.html", "index.htm" };
+        private static string[] DefaultFiles = { "index.html"};
 
         static void Main(string[] prefixes)
         {
@@ -53,9 +53,10 @@ namespace JJJWebServer
                     // Note: The GetContext method blocks while waiting for a request. 
                     HttpListenerContext context = listener.GetContext();
                     HttpListenerRequest request = context.Request;
-                    string filename = context.Request.Url.AbsolutePath;
+                    string filename = request.RawUrl;
                     filename = filename.Substring(1);
                     //checks if file exists in root folder
+
                     if (string.IsNullOrEmpty(filename))
                     {
                         foreach (string indexFile in DefaultFiles)
@@ -74,7 +75,6 @@ namespace JJJWebServer
                         try
                         {
                             Stream input = new FileStream(filename, FileMode.Open);
-
                             //Adding permanent http response headers
                             //context.Response.ContentType = extensions.TryGetValue(Path.GetExtension(filename), out string mime)
                             //    ? mime
