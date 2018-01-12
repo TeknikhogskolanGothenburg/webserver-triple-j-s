@@ -39,9 +39,9 @@ namespace JJJWebServer
                 try
                 {
                     //reads in all files from folder
-                    byte[] fileList = File.ReadAllBytes(rootPath + "index.html");
+                    var fileList = Directory.GetFiles(rootPath);
 
-                    foreach (byte b in fileList)
+                    foreach (var f in fileList)
                     {
                         HttpListenerContext context = listener.GetContext();
                         HttpListenerRequest request = context.Request;
@@ -59,10 +59,10 @@ namespace JJJWebServer
                                 }
                             }
                         }
-                        if(filename == "Subfolder/")
-                        {
-                            filename = "SubFolder/index.html";
-                        }
+                        //if(filename == "Subfolder/")
+                        //{
+                        //    filename = "SubFolder/index.html";
+                        //}
                         filename = Path.Combine(rootPath, filename);
                         //runs program if file exists
                         if (File.Exists(filename))
