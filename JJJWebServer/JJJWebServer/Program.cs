@@ -59,10 +59,10 @@ namespace JJJWebServer
                                 }
                             }
                         }
-                        //if(filename == "Subfolder/")
-                        //{
-                        //    filename = "SubFolder/index.html";
-                        //}
+                        if (filename == "Subfolder/")
+                        {
+                            filename = "SubFolder/index.html";
+                        }
                         filename = Path.Combine(rootPath, filename);
                         //runs program if file exists
                         if (File.Exists(filename))
@@ -104,7 +104,7 @@ namespace JJJWebServer
                 }
 
             }
-            listener.Close();
+            //listener.Close();
         }
         private static string getContentType(string extension)
         {
