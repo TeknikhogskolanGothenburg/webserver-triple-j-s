@@ -10,18 +10,6 @@ namespace JJJWebServer
 {
     class Program
     {
-        private static Dictionary<string, string> extensions = new Dictionary<string, string>()
-        {
-            { "htm", "text/html" },
-            { "html", "text/html" },
-            { "xml", "text/xml" },
-            { "css", "text/css" },
-            { "gif", "image/gif" },
-            { "jpg", "image/jpg" },
-            { "jpeg", "image/jpeg" },
-            { "ico", "image/x-icon" }
-        };
-
         private static string rootPath = ".../.../.../.../Content/";
         private static string[] DefaultFiles = { "index.html" };
 
@@ -84,9 +72,7 @@ namespace JJJWebServer
                                 Console.WriteLine(filename);
                                 Stream input = new FileStream(filename, FileMode.Open);
                                 //Adding permanent http response headers
-                                context.Response.ContentType = extensions.TryGetValue(Path.GetExtension(filename), out string mime)
-                                    ? mime
-                                    : "text/html";
+                                context.Response.ContentType = getContentType(Path.GetExtension(filename));
                                 context.Response.ContentLength64 = input.Length;
                                 context.Response.AddHeader("Date", DateTime.Now.ToString("r"));
                                 context.Response.AddHeader("Last-Modified", File.GetLastWriteTime(filename).ToString("r"));
@@ -119,6 +105,23 @@ namespace JJJWebServer
 
             }
             listener.Close();
+        }
+        private static string getContentType(string extension)
+        {
+            switch (extension)
+            {
+                case ".css": return "text/css";
+                case ".gif": return "image/gif";
+                case ".htm":
+                case ".html": return "text/html";
+                case ".jpg":
+                case ".jpeg": return "image/jpeg";
+                case ".js": return "application/x-javascript";
+                case ".png": return "image/png";
+                case ".pdf": return "application/pdf";
+                case ".txt": return "text/plain";
+                default: return "application/octet-stream";
+            }
         }
     }
 }
