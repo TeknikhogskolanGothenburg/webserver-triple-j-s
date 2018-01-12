@@ -73,6 +73,7 @@ namespace JJJWebServer
                                 Stream input = new FileStream(filename, FileMode.Open);
                                 //Adding permanent http response headers
                                 context.Response.ContentType = getContentType(Path.GetExtension(filename));
+                                Console.WriteLine("Content Type: " + context.Response.ContentType);
                                 context.Response.ContentLength64 = input.Length;
                                 context.Response.AddHeader("Date", DateTime.Now.ToString("r"));
                                 context.Response.AddHeader("Last-Modified", File.GetLastWriteTime(filename).ToString("r"));
@@ -85,16 +86,19 @@ namespace JJJWebServer
                                 context.Response.OutputStream.Flush();
 
                                 context.Response.StatusCode = (int)HttpStatusCode.OK;
+                                Console.WriteLine("Status Code: " + context.Response.StatusCode);
                                 context.Response.OutputStream.Close();
                             }
                             catch (Exception ex)
                             {
                                 context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                                Console.WriteLine("Status Code: " + context.Response.StatusCode);
                             }
                         }
                         else
                         {
                             context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                            Console.WriteLine("Status Code: " + context.Response.StatusCode);
                         }
                     };
                 }
