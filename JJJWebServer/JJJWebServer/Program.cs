@@ -10,6 +10,21 @@ namespace JJJWebServer
 {
     class Program
     {
+        private static Dictionary<string, string> extensions = new Dictionary<string, string>()
+        {
+            { "htm", "text/html" },
+            { "html", "text/html" },
+            { "xml", "text/xml" },
+            { "css", "text/css" },
+            { "gif", "image/gif" },
+            { "jpg", "image/jpg" },
+            { "jpeg", "image/jpeg" },
+            { "ico", "image/x-icon" }
+        };
+
+        private static string rootPath = ".../.../.../.../Content/";
+        private static string[] DefaultFiles = { "index.html", "index.htm" };
+
         static void Main(string[] prefixes)
         {
             if (!HttpListener.IsSupported)
@@ -20,69 +35,81 @@ namespace JJJWebServer
             // URI prefixes are required,
             // for example "http://localhost:8080/".
             if (prefixes == null || prefixes.Length == 0)
+            {
                 throw new ArgumentException("prefixes");
+            }
 
             // Create a listener.
             HttpListener listener = new HttpListener();
             // Add the prefixes.
             listener.Prefixes.Add("http://localhost:8080/");
-            
             listener.Start();
             Console.WriteLine("Listening...");
             
-            while (listener.IsListening)
+            while (true)
             {
-                string path = @"...\...\...\...\Content";
-                // Note: The GetContext method blocks while waiting for a request. 
-                HttpListenerContext context = listener.GetContext();
-                HttpListenerRequest request = context.Request;
-                // Obtain a response object.
-                //GetContentTypeStuff(context);
-                HttpListenerResponse response = context.Response;
-                // Construct a response.
-                byte[] buffer = File.ReadAllBytes(path);
-                // Get a response stream and write the response to it.
-                response.ContentLength64 = buffer.Length;
-                System.IO.Stream output = response.OutputStream;
-                output.Write(buffer, 0, buffer.Length);
-                // You must close the output stream.
-                output.Close();
-            }
-            
-            listener.Stop();
-        }
+                try
+                {
+                    // Note: The GetContext method blocks while waiting for a request. 
+                    HttpListenerContext context = listener.GetContext();
+                    HttpListenerRequest request = context.Request;
+                    string filename = context.Request.Url.AbsolutePath;
+                    filename = filename.Substring(1);
+                    //checks if file exists in root folder
+                    if (string.IsNullOrEmpty(filename))
+                    {
+                        foreach (string indexFile in DefaultFiles)
+                        {
+                            if (File.Exists(Path.Combine(rootPath, indexFile)))
+                            {
+                                filename = indexFile;
+                                break;
+                            }
+                        }
+                    }
+                    filename = Path.Combine(rootPath, filename);
+                    //runs program if file exists
+                    if (File.Exists(filename))
+                    {
+                        try
+                        {
+                            Stream input = new FileStream(filename, FileMode.Open);
 
-        public static void GetContentTypeStuff(HttpListenerContext context)
-        {
-            if (Path.GetExtension(context.Request.RawUrl) == ".jpg")
-            {
-                context.Response.ContentType = "image/jpeg";
+                            //Adding permanent http response headers
+                            //context.Response.ContentType = extensions.TryGetValue(Path.GetExtension(filename), out string mime)
+                            //    ? mime
+                            //    : "text/html";
+                            context.Response.ContentLength64 = input.Length;
+                            context.Response.AddHeader("Date", DateTime.Now.ToString("r"));
+                            context.Response.AddHeader("Last-Modified", File.GetLastWriteTime(filename).ToString("r"));
+
+                            byte[] buffer = new byte[1024 * 32];
+                            int nbytes;
+                            while ((nbytes = input.Read(buffer, 0, buffer.Length)) > 0)
+                            context.Response.OutputStream.Write(buffer, 0, nbytes);
+                            input.Close();
+                            context.Response.OutputStream.Flush();
+
+                            context.Response.StatusCode = (int)HttpStatusCode.OK;
+                            context.Response.OutputStream.Close();
+                        }
+                        catch (Exception ex)
+                        {
+                            context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                        }
+                    }
+                    else
+                    {
+                        context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                    }
+                }
+                catch(Exception e)
+                {
+                    listener.Close();
+                    Console.WriteLine(e);
+                }
             }
-            else if (Path.GetExtension(context.Request.RawUrl) == ".gif")
-            {
-                context.Response.ContentType = "image/gif";
-            }
-            else if (Path.GetExtension(context.Request.RawUrl) == ".css")
-            {
-                context.Response.ContentType = "text/css";
-            }
-            else if (Path.GetExtension(context.Request.RawUrl) == ".htm")
-            {
-                context.Response.ContentType = "text/html";
-            }
-            else if (Path.GetExtension(context.Request.RawUrl) == ".html")
-            {
-                context.Response.ContentType = "text/html";
-            }
-            else if (Path.GetExtension(context.Request.RawUrl) == ".ico")
-            {
-                context.Response.ContentType = "image/x-icon";
-            }
-            else if (Path.GetExtension(context.Request.RawUrl) == ".js")
-            {
-                context.Response.ContentType = "application/x-javascript";
-            }
-        }
-        
+        }  
     }
 }
+
