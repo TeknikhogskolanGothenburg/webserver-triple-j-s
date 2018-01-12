@@ -23,7 +23,7 @@ namespace JJJWebServer
         };
 
         private static string rootPath = ".../.../.../.../Content/";
-        private static string[] DefaultFiles = { "index.html"};
+        private static string[] DefaultFiles = { "index.html" };
 
         static void Main(string[] prefixes)
         {
@@ -45,71 +45,77 @@ namespace JJJWebServer
             listener.Prefixes.Add("http://localhost:8080/");
             listener.Start();
             Console.WriteLine("Listening...");
-            
+
             while (true)
             {
                 try
                 {
-                    // Note: The GetContext method blocks while waiting for a request. 
-                    HttpListenerContext context = listener.GetContext();
-                    HttpListenerRequest request = context.Request;
-                    string filename = request.RawUrl;
-                    filename = filename.Substring(1);
-                    //checks if file exists in root folder
+                    //reads in all files from folder
+                    byte[] fileList = File.ReadAllBytes(rootPath + "index.html");
 
-                    if (string.IsNullOrEmpty(filename))
+                    foreach (byte b in fileList)
                     {
-                        foreach (string indexFile in DefaultFiles)
+                        HttpListenerContext context = listener.GetContext();
+                        HttpListenerRequest request = context.Request;
+                        string filename = request.RawUrl;
+                        filename = filename.Substring(1);
+
+                        if (string.IsNullOrEmpty(filename))
                         {
-                            if (File.Exists(Path.Combine(rootPath, indexFile)))
+                            foreach (string indexFile in DefaultFiles)
                             {
-                                filename = indexFile;
-                                break;
+                                if (File.Exists(Path.Combine(rootPath, indexFile)))
+                                {
+                                    filename = indexFile;
+                                    break;
+                                }
                             }
                         }
-                    }
-                    filename = Path.Combine(rootPath, filename);
-                    //runs program if file exists
-                    if (File.Exists(filename))
-                    {
-                        try
+                        filename = Path.Combine(rootPath, filename);
+                        //runs program if file exists
+                        if (File.Exists(filename))
                         {
-                            Stream input = new FileStream(filename, FileMode.Open);
-                            //Adding permanent http response headers
-                            //context.Response.ContentType = extensions.TryGetValue(Path.GetExtension(filename), out string mime)
-                            //    ? mime
-                            //    : "text/html";
-                            context.Response.ContentLength64 = input.Length;
-                            context.Response.AddHeader("Date", DateTime.Now.ToString("r"));
-                            context.Response.AddHeader("Last-Modified", File.GetLastWriteTime(filename).ToString("r"));
+                            try
+                            {
+                                Console.WriteLine(filename);
+                                Stream input = new FileStream(filename, FileMode.Open);
+                                //Adding permanent http response headers
+                                //context.Response.ContentType = extensions.TryGetValue(Path.GetExtension(filename), out string mime)
+                                //    ? mime
+                                //    : "text/html";
+                                context.Response.ContentLength64 = input.Length;
+                                context.Response.AddHeader("Date", DateTime.Now.ToString("r"));
+                                context.Response.AddHeader("Last-Modified", File.GetLastWriteTime(filename).ToString("r"));
 
-                            byte[] buffer = new byte[1024 * 32];
-                            int nbytes;
-                            while ((nbytes = input.Read(buffer, 0, buffer.Length)) > 0)
-                            context.Response.OutputStream.Write(buffer, 0, nbytes);
-                            input.Close();
-                            context.Response.OutputStream.Flush();
+                                byte[] buffer = new byte[1024 * 32];
+                                int nbytes;
+                                while ((nbytes = input.Read(buffer, 0, buffer.Length)) > 0)
+                                    context.Response.OutputStream.Write(buffer, 0, nbytes);
+                                input.Close();
+                                context.Response.OutputStream.Flush();
 
-                            context.Response.StatusCode = (int)HttpStatusCode.OK;
-                            context.Response.OutputStream.Close();
+                                context.Response.StatusCode = (int)HttpStatusCode.OK;
+                                context.Response.OutputStream.Close();
+                            }
+                            catch (Exception ex)
+                            {
+                                context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                            }
                         }
-                        catch (Exception ex)
+                        else
                         {
-                            context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                            context.Response.StatusCode = (int)HttpStatusCode.NotFound;
                         }
-                    }
-                    else
-                    {
-                        context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-                    }
+                    };
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
-                    listener.Close();
                     Console.WriteLine(e);
                 }
+
             }
-        }  
+            listener.Close();
+        }
     }
 }
 
