@@ -5,6 +5,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using System.Web;
 
 namespace JJJWebServer
 {
@@ -34,6 +35,8 @@ namespace JJJWebServer
             listener.Start();
             Console.WriteLine("Listening...");
 
+            Dictionary<string, int> cookieCounter = new Dictionary<string, int>(); //cookievalue, counter
+
             while (true)
             {
                 try
@@ -45,6 +48,22 @@ namespace JJJWebServer
                     {
                         HttpListenerContext context = listener.GetContext();
                         HttpListenerRequest request = context.Request;
+                        HttpListenerResponse response = context.Response;
+
+                        Cookie cookie = new Cookie { Name = "counter", Path = "", Expires = DateTime.MinValue };
+
+                        if(request.Cookies.Count == 0 || request.Cookies["counter"] == null)
+                        {
+                            // cookie does not exist create one.
+                            cookieCounter.Add(cookie.Value, 1);
+                        }
+                        else
+                        {
+                            cookie.Value = request.Cookies["counter"].Value;
+                            cookieCounter[cookie.Value]++;
+                        }
+                        response.SetCookie(cookie);
+
                         string filename = request.RawUrl;
                         filename = filename.Substring(1);
 
