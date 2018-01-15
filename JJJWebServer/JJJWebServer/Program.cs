@@ -53,28 +53,6 @@ namespace JJJWebServer
                     HttpListenerRequest request = context.Request;
                     HttpListenerResponse response = context.Response;
 
-                    //Cookie
-                    //string cookieValue = string.Empty;
-                    //if (request.Cookies.Count == 0 || request.Cookies["counter"] == null)
-                    //{
-                    //    if (cookieCounter.Count == 0)
-                    //    {
-                    //        cookieValue = "1";
-                    //    }
-                    //    else
-                    //    {
-                    //        var max = cookieCounter.Keys.Max(x => int.Parse(x));
-                    //        cookieValue = (max + 1).ToString();
-                    //    }
-                    //    cookieCounter.Add(cookieValue, 1);
-                    //}
-                    //else
-                    //{
-                    //    cookieValue = request.Cookies["counter"].Value;
-                    //    cookieCounter[cookieValue]++;
-                    //}
-                    //response.SetCookie(new Cookie("counter", cookieValue));
-
                     string filename = request.RawUrl;
                     filename = filename.Substring(1);
 
@@ -99,6 +77,28 @@ namespace JJJWebServer
                     {
                         try
                         {
+                            //Cookie
+                            string cookieValue = string.Empty;
+                            if (request.Cookies.Count == 0 || request.Cookies["counter"] == null)
+                            {
+                                if (cookieCounter.Count == 0)
+                                {
+                                    cookieValue = "1";
+                                }
+                                else
+                                {
+                                    var max = cookieCounter.Keys.Max(x => int.Parse(x));
+                                    cookieValue = (max + 1).ToString();
+                                }
+                                cookieCounter.Add(cookieValue, 1);
+                            }
+                            else
+                            {
+                                cookieValue = request.Cookies["counter"].Value;
+                                cookieCounter[cookieValue]++;
+                            }
+
+                            response.SetCookie(new Cookie("counter", cookieValue));
                             Console.WriteLine(filename);
                             Stream input = new FileStream(filename, FileMode.Open);
                             //Adding permanent http response headers
