@@ -55,19 +55,19 @@ namespace JJJWebServer
                         HttpListenerRequest request = context.Request;
                         HttpListenerResponse response = context.Response;
 
-                        Cookie cookie = new Cookie { Name = "counter", Path = "", Expires = DateTime.MinValue };
-
+                        string cookieValue = string.Empty;
                         if (request.Cookies.Count == 0 || request.Cookies["counter"] == null)
                         {
                             // cookie does not exist create one.
-                            cookieCounter.Add(cookie.Value, 1);
+                            //cookieValue = "1";
+                            cookieCounter.Add(cookieValue, 1);
                         }
                         else
                         {
-                            cookie.Value = request.Cookies["counter"].Value;
-                            cookieCounter[cookie.Value]++;
+                            cookieValue = request.Cookies["counter"].Value;
+                            cookieCounter[cookieValue]++;
                         }
-                        response.SetCookie(cookie);
+                        response.SetCookie(new Cookie("counter", cookieValue));
 
                         string filename = request.RawUrl;
                         filename = filename.Substring(1);
