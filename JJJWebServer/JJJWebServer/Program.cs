@@ -58,8 +58,15 @@ namespace JJJWebServer
                         string cookieValue = string.Empty;
                         if (request.Cookies.Count == 0 || request.Cookies["counter"] == null)
                         {
-                            // cookie does not exist create one.
-                            //cookieValue = "1";
+                            if (cookieCounter.Count == 0)
+                            {
+                                cookieValue = "1";
+                            }
+                            else
+                            {
+                                var max = cookieCounter.Keys.Max(x => int.Parse(x));
+                                cookieValue = (max + 1).ToString();
+                            }
                             cookieCounter.Add(cookieValue, 1);
                         }
                         else
