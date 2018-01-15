@@ -78,6 +78,7 @@ namespace JJJWebServer
                         try
                         {
                             //Cookie
+                            int cookieAmount = 1;
                             string cookieValue = string.Empty;
                             if (request.Cookies.Count == 0 || request.Cookies["counter"] == null)
                             {
@@ -87,15 +88,23 @@ namespace JJJWebServer
                                 }
                                 else
                                 {
-                                    var max = cookieCounter.Keys.Max(x => int.Parse(x));
-                                    cookieValue = (max + 1).ToString();
+                                    foreach (KeyValuePair<string, int> cookie in cookieCounter)
+                                    {
+                                        cookieAmount++;
+                                    }
+                                    cookieValue = cookieAmount.ToString();
                                 }
                                 cookieCounter.Add(cookieValue, 1);
                             }
                             else
                             {
-                                cookieValue = request.Cookies["counter"].Value;
-                                cookieCounter[cookieValue]++;
+                                foreach (KeyValuePair<string, int> cookie in cookieCounter)
+                                {
+                                    cookieAmount++;
+                                }
+                                cookieValue = cookieAmount.ToString();
+                                cookieCounter.Add(cookieValue, 1);
+                                //cookieCounter[cookieValue]++;
                             }
 
                             response.SetCookie(new Cookie("counter", cookieValue));
