@@ -86,15 +86,15 @@ namespace JJJWebServer
                                 {
                                     cookieValue = "1";
                                 }
-                                else
-                                {
-                                    foreach (KeyValuePair<string, int> cookie in cookieCounter)
-                                    {
-                                        cookieAmount++;
-                                    }
-                                    cookieValue = cookieAmount.ToString();
-                                }
-                                cookieCounter.Add(cookieValue, 1);
+                                //else
+                                //{
+                                //    foreach (KeyValuePair<string, int> cookie in cookieCounter)
+                                //    {
+                                //        cookieAmount++;
+                                //    }
+                                //    cookieValue = cookieAmount.ToString();
+                                //}
+                                //cookieCounter.Add(cookieValue, 1);
                             }
                             else
                             {
