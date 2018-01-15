@@ -20,9 +20,11 @@ namespace JJJWebServer
                 Console.WriteLine("Windows XP SP2 or Server 2003 is required to use the HttpListener class.");
                 return;
             }
+
+            string[] addresses = { "http://localhost:8080/" };
             // URI prefixes are required,
             // for example "http://localhost:8080/".
-            if (prefixes == null || prefixes.Length == 0)
+            if (addresses == null || addresses.Length == 0)
             {
                 throw new ArgumentException("prefixes");
             }
@@ -30,7 +32,10 @@ namespace JJJWebServer
             // Create a listener.
             HttpListener listener = new HttpListener();
             // Add the prefixes.
-            listener.Prefixes.Add("http://localhost:8080/");
+            foreach (string prefix in addresses)
+            {
+                listener.Prefixes.Add(prefix);
+            }
             listener.Start();
             Console.WriteLine("Listening...");
 
@@ -92,11 +97,12 @@ namespace JJJWebServer
                             catch (Exception ex)
                             {
                                 context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-                                Console.WriteLine("Status Code: " + context.Response.StatusCode);
+                                Console.WriteLine("Status Code: " + context.Response.StatusCode + ":"+ "ex");
                             }
                         }
                         else
                         {
+                            Console.WriteLine(filename);
                             context.Response.StatusCode = (int)HttpStatusCode.NotFound;
                             Console.WriteLine("Status Code: " + context.Response.StatusCode);
                         }
@@ -106,7 +112,6 @@ namespace JJJWebServer
                 {
                     Console.WriteLine(e);
                 }
-
             }
             //listener.Close();
         }
