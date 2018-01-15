@@ -55,19 +55,19 @@ namespace JJJWebServer
                         HttpListenerRequest request = context.Request;
                         HttpListenerResponse response = context.Response;
 
-                        string cookieValue = string.Empty;
-                        if (request.Cookies.Count == 0 || request.Cookies["counter"] == null)
-                        {
-                            // cookie does not exist create one.
-                            //cookieValue = "1";
-                            cookieCounter.Add(cookieValue, 1);
-                        }
-                        else
-                        {
-                            cookieValue = request.Cookies["counter"].Value;
-                            cookieCounter[cookieValue]++;
-                        }
-                        response.SetCookie(new Cookie("counter", cookieValue));
+                        //string cookieValue = string.Empty;
+                        //if (request.Cookies.Count == 0 || request.Cookies["counter"] == null)
+                        //{
+                        //    // cookie does not exist create one.
+                        //    //cookieValue = "1";
+                        //    cookieCounter.Add(cookieValue, 1);
+                        //}
+                        //else
+                        //{
+                        //    cookieValue = request.Cookies["counter"].Value;
+                        //    cookieCounter[cookieValue]++;
+                        //}
+                        //response.SetCookie(new Cookie("counter", cookieValue));
 
                         string filename = request.RawUrl;
                         filename = filename.Substring(1);
@@ -96,7 +96,7 @@ namespace JJJWebServer
                                 Console.WriteLine(filename);
                                 Stream input = new FileStream(filename, FileMode.Open);
                                 //Adding permanent http response headers
-                                context.Response.ContentType = getContentType(Path.GetExtension(filename));
+                                context.Response.ContentType = GetContentType(Path.GetExtension(filename));
                                 Console.WriteLine("Content Type: " + context.Response.ContentType);
                                 context.Response.ContentLength64 = input.Length;
                                 context.Response.AddHeader("Date", DateTime.Now.ToString("r"));
@@ -116,8 +116,17 @@ namespace JJJWebServer
                             catch (Exception ex)
                             {
                                 context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-                                Console.WriteLine("Status Code: " + context.Response.StatusCode + ":"+ "ex");
+                                Console.WriteLine("Status Code: " + context.Response.StatusCode + ":"+ ex);
                             }
+                        }
+                        else if (filename == ".../.../.../.../Content/dynamic")
+                        {
+                            string responseString = DynamicMethod(context, 5, 6);
+                            byte[] buffer = System.Text.Encoding.UTF8.GetBytes(responseString);
+                            response.ContentLength64 = buffer.Length;
+                            System.IO.Stream output = response.OutputStream;
+                            output.Write(buffer, 0, buffer.Length);
+                            output.Close();
                         }
                         else
                         {
@@ -138,7 +147,7 @@ namespace JJJWebServer
             }
             //listener.Close();
         }
-        private static string getContentType(string extension)
+        private static string GetContentType(string extension)
         {
             switch (extension)
             {
@@ -152,8 +161,27 @@ namespace JJJWebServer
                 case ".png": return "image/png";
                 case ".pdf": return "application/pdf";
                 case ".txt": return "text/plain";
+                case ".xml": return "application/xml";
                 default: return "application/octet-stream";
             }
+        }
+
+        private static string DynamicMethod(HttpListenerContext context, int input1, int input2)
+        {
+             string answer = "";
+             foreach (string x in context.Request.AcceptTypes)
+             {
+                int sum = input1 + input2;
+                if (x == "application/xml")
+                {
+                    answer = "<result><value>" + sum + "</value></result>";
+                }
+                else if (x == "text/html")
+                {
+                    answer = "<html><body>" + sum + "</body></html>";
+                }
+             }
+             return answer;
         }
     }
 }
