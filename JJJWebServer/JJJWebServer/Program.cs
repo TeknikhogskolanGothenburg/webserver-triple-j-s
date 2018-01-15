@@ -55,6 +55,7 @@ namespace JJJWebServer
                         HttpListenerRequest request = context.Request;
                         HttpListenerResponse response = context.Response;
 
+                        //Cookie
                         string cookieValue = string.Empty;
                         if (request.Cookies.Count == 0 || request.Cookies["counter"] == null)
                         {
