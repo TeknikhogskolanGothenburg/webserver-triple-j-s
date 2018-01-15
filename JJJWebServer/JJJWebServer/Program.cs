@@ -57,7 +57,7 @@ namespace JJJWebServer
 
                         Cookie cookie = new Cookie { Name = "counter", Path = "", Expires = DateTime.MinValue };
 
-                        if(request.Cookies.Count == 0 || request.Cookies["counter"] == null)
+                        if (request.Cookies.Count == 0 || request.Cookies["counter"] == null)
                         {
                             // cookie does not exist create one.
                             cookieCounter.Add(cookie.Value, 1);
@@ -121,9 +121,13 @@ namespace JJJWebServer
                         }
                         else
                         {
-                            Console.WriteLine(filename);
-                            context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-                            Console.WriteLine("Status Code: " + context.Response.StatusCode);
+                            
+                            if (filename != ".../.../.../.../Content/favicon.ico")
+                            {
+                                Console.WriteLine(filename);
+                                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                                Console.WriteLine("Status Code: " + context.Response.StatusCode);
+                            }
                         }
                     };
                 }
