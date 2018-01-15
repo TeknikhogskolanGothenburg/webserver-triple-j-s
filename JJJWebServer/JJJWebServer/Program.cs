@@ -48,105 +48,101 @@ namespace JJJWebServer
                 {
                     //reads in all files from folder
                     var fileList = Directory.GetFiles(rootPath);
+                    
+                    HttpListenerContext context = listener.GetContext();
+                    HttpListenerRequest request = context.Request;
+                    HttpListenerResponse response = context.Response;
 
-                    foreach (var f in fileList)
+                    //Cookie
+                    //string cookieValue = string.Empty;
+                    //if (request.Cookies.Count == 0 || request.Cookies["counter"] == null)
+                    //{
+                    //    if (cookieCounter.Count == 0)
+                    //    {
+                    //        cookieValue = "1";
+                    //    }
+                    //    else
+                    //    {
+                    //        var max = cookieCounter.Keys.Max(x => int.Parse(x));
+                    //        cookieValue = (max + 1).ToString();
+                    //    }
+                    //    cookieCounter.Add(cookieValue, 1);
+                    //}
+                    //else
+                    //{
+                    //    cookieValue = request.Cookies["counter"].Value;
+                    //    cookieCounter[cookieValue]++;
+                    //}
+                    //response.SetCookie(new Cookie("counter", cookieValue));
+
+                    string filename = request.RawUrl;
+                    filename = filename.Substring(1);
+
+                    if (string.IsNullOrEmpty(filename))
                     {
-                        HttpListenerContext context = listener.GetContext();
-                        HttpListenerRequest request = context.Request;
-                        HttpListenerResponse response = context.Response;
-
-                        //Cookie
-                        string cookieValue = string.Empty;
-                        if (request.Cookies.Count == 0 || request.Cookies["counter"] == null)
+                        foreach (string indexFile in DefaultFiles)
                         {
-                            if (cookieCounter.Count == 0)
+                            if (File.Exists(Path.Combine(rootPath, indexFile)))
                             {
-                                cookieValue = "1";
-                            }
-                            else
-                            {
-                                var max = cookieCounter.Keys.Max(x => int.Parse(x));
-                                cookieValue = (max + 1).ToString();
-                            }
-                            cookieCounter.Add(cookieValue, 1);
-                        }
-                        else
-                        {
-                            cookieValue = request.Cookies["counter"].Value;
-                            cookieCounter[cookieValue]++;
-                        }
-                        response.SetCookie(new Cookie("counter", cookieValue));
-
-                        string filename = request.RawUrl;
-                        filename = filename.Substring(1);
-
-                        if (string.IsNullOrEmpty(filename))
-                        {
-                            foreach (string indexFile in DefaultFiles)
-                            {
-                                if (File.Exists(Path.Combine(rootPath, indexFile)))
-                                {
-                                    filename = indexFile;
-                                    break;
-                                }
+                                filename = indexFile;
+                                break;
                             }
                         }
-                        if (filename == "Subfolder/")
+                    }
+                    if (filename == "Subfolder/")
+                    {
+                        filename = "SubFolder/index.html";
+                    }
+                    filename = Path.Combine(rootPath, filename);
+                    //runs program if file exists
+                    if (File.Exists(filename))
+                    {
+                        try
                         {
-                            filename = "SubFolder/index.html";
-                        }
-                        filename = Path.Combine(rootPath, filename);
-                        //runs program if file exists
-                        if (File.Exists(filename))
-                        {
-                            try
-                            {
-                                Console.WriteLine(filename);
-                                Stream input = new FileStream(filename, FileMode.Open);
-                                //Adding permanent http response headers
-                                context.Response.ContentType = GetContentType(Path.GetExtension(filename));
-                                Console.WriteLine("Content Type: " + context.Response.ContentType);
-                                context.Response.ContentLength64 = input.Length;
-                                context.Response.AddHeader("Date", DateTime.Now.ToString("r"));
-                                context.Response.AddHeader("Last-Modified", File.GetLastWriteTime(filename).ToString("r"));
+                            Console.WriteLine(filename);
+                            Stream input = new FileStream(filename, FileMode.Open);
+                            //Adding permanent http response headers
+                            context.Response.ContentType = GetContentType(Path.GetExtension(filename));
+                            Console.WriteLine("Content Type: " + context.Response.ContentType);
+                            context.Response.ContentLength64 = input.Length;
 
-                                byte[] buffer = new byte[1024 * 32];
-                                int nbytes;
-                                while ((nbytes = input.Read(buffer, 0, buffer.Length)) > 0)
-                                    context.Response.OutputStream.Write(buffer, 0, nbytes);
-                                input.Close();
-                                context.Response.OutputStream.Flush();
+                            byte[] buffer = new byte[1024 * 32];
+                            int nbytes;
+                            while ((nbytes = input.Read(buffer, 0, buffer.Length)) > 0)
+                                context.Response.OutputStream.Write(buffer, 0, nbytes);
+                            input.Close();
+                            context.Response.OutputStream.Flush();
 
-                                context.Response.StatusCode = (int)HttpStatusCode.OK;
-                                Console.WriteLine("Status Code: " + context.Response.StatusCode);
-                                context.Response.OutputStream.Close();
-                            }
-                            catch (Exception ex)
-                            {
-                                context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-                                Console.WriteLine("Status Code: " + context.Response.StatusCode + ":"+ "ex");
-                            }
+                            context.Response.StatusCode = (int)HttpStatusCode.OK;
+                            Console.WriteLine("Status Code: " + context.Response.StatusCode);
+                            context.Response.OutputStream.Close();
                         }
-                        else if (filename == ".../.../.../.../Content/dynamic")
+                        catch (Exception ex)
                         {
-                            string responseString = DynamicMethod(context, 5, 6);
-                            byte[] buffer = System.Text.Encoding.UTF8.GetBytes(responseString);
-                            response.ContentLength64 = buffer.Length;
-                            System.IO.Stream output = response.OutputStream;
-                            output.Write(buffer, 0, buffer.Length);
-                            output.Close();
+                            context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                            Console.WriteLine("Status Code: " + context.Response.StatusCode + ":"+ ex);
                         }
-                        else
-                        {
+                    }
+                    else if (filename == ".../.../.../.../Content/dynamic")
+                    {
+                        string responseString = DynamicMethod(context, 5, 6);
+                        byte[] buffer = System.Text.Encoding.UTF8.GetBytes(responseString);
+                        response.ContentLength64 = buffer.Length;
+                        System.IO.Stream output = response.OutputStream;
+                        output.Write(buffer, 0, buffer.Length);
+                        output.Close();
+                    }
+                    else
+                    {
                             
-                            if (filename != ".../.../.../.../Content/favicon.ico")
-                            {
-                                Console.WriteLine(filename);
-                                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-                                Console.WriteLine("Status Code: " + context.Response.StatusCode);
-                            }
+                        if (filename != ".../.../.../.../Content/favicon.ico")
+                        {
+                            Console.WriteLine(filename);
+                            context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                            context.Response.StatusDescription = "File not found";
+                            Console.WriteLine("Status Code: " + context.Response.StatusCode);
                         }
-                    };
+                    }    
                 }
                 catch (Exception e)
                 {
